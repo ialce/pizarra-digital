@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pizarra Digital · Ruta de pistas por el pueblo</title>
+  <meta name="description" content="Juego del Punto Vuela de Pizarra: recorre el pueblo resolviendo pistas de ordenadores, móviles e internet hasta llegar a El Santo.">
+  <meta name="theme-color" content="#1F6E3A">
+  <link rel="icon" href="/icono.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/src/estilos.css">
+</head>
+<body>
+  <main class="portada">
+    <div class="portada-caja">
+      <p class="portada-sup">Punto Vuela · Pizarra</p>
+      <h1>Pizarra Digital</h1>
+      <p class="portada-texto">Recorre el pueblo buscando pistas. En cada sitio hay un pequeño reto de ordenadores, móviles e internet. ¿Llegarás hasta El Santo?</p>
+      <div class="portada-botones">
+        <button type="button" class="boton boton-grande" data-jugar>Empezar a jugar</button>
+        <button type="button" class="boton" data-nueva hidden>Empezar de nuevo</button>
+      </div>
+      <p class="portada-nota">Se juega en el ordenador y en el móvil. Tu partida se guarda sola en este aparato.</p>
+    </div>
+    <p class="portada-pie">Plano: © colaboradores de <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></p>
+  </main>
+  <div id="juego" class="pj" hidden role="application" aria-label="Juego Pizarra Digital"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

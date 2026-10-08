@@ -1,0 +1,32 @@
+{
+  "name": "pizarra-digital",
+  "version": "1.0.0",
+  "description": "Juego de pistas por Pizarra (Málaga) para el curso de digitalización del Punto Vuela",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "osm": "node scripts/osm.mjs",
+    "revisar": "node scripts/revisar.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ialce/pizarra-digital.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ialce/pizarra-digital/issues"
+  },
+  "homepage": "https://github.com/ialce/pizarra-digital#readme",
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "playwright-core": "^1.64.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "@fontsource/atkinson-hyperlegible": "^5.3.0",
+    "three": "^0.186.1"
+  },
+  "private": true,
+  "type": "module"
+}
