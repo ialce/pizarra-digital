@@ -52,7 +52,7 @@ const paradas: Parada[] = [
       ],
       bien: '¡Eso es! Correos nunca te pide pagar por un enlace en un mensaje.',
     },
-    pista: 'Sigue la Avenida de Europa, la calle larga con árboles. A mitad de camino hay un ordenador esperándote.',
+    pista: 'Busca la avenida larga con una fila de árboles en medio. Por la mitad, alguien se ha dejado un ordenador.',
   },
   {
     id: 'avenida-europa', lugar: 'la Avenida de Europa', ...p('Avenida de Europa', 0.4), objeto: 'ordenador',
@@ -69,7 +69,7 @@ const paradas: Parada[] = [
       ayuda: 'Las seguras son largas y mezclan palabras, números y símbolos.',
       bien: '¡Muy bien! Larga, con palabras sueltas, números y algún símbolo.',
     },
-    pista: 'Ahora baja hacia la Calle Grecia. Allí te espera una tableta con fotos.',
+    pista: 'Ahora ve hacia las calles con nombre de país del sur del barrio. En la de los dioses del Olimpo te espera una tableta.',
   },
   {
     id: 'calle-grecia', lugar: 'la Calle Grecia', ...p('Calle Grecia', 0.5), objeto: 'tableta',
@@ -79,7 +79,7 @@ const paradas: Parada[] = [
       pasos: ['Abrir WhatsApp', 'Entrar en la conversación de la persona', 'Tocar el clip o la cámara', 'Elegir la foto', 'Pulsar el botón de enviar'],
       bien: '¡Foto enviada!',
     },
-    pista: 'Sube hasta la Plaza de Carlos Cano. Allí hay un sobre con la última pista antes de El Santo.',
+    pista: 'Sube hasta la plaza que lleva el nombre de un cantautor granadino. Allí hay un sobre.',
   },
   {
     id: 'carlos-cano', lugar: 'la Plaza de Carlos Cano', ...p('Plaza de Carlos Cano', 0), objeto: 'sobre',
@@ -116,15 +116,15 @@ export const pizarra: DatosJuego = {
         '¡Hola! Soy Victoria, la profesora del Punto Vuela. Bienvenido al juego de Pizarra Digital.',
         'Vas a recorrer el pueblo buscando pistas. En cada sitio hay un pequeño reto de ordenadores, móviles e internet.',
         'Cada reto que superes te dice dónde está la siguiente pista. La última te lleva hasta El Santo.',
-        'Si te pierdes, pulsa «Llévame» y te acompaño andando. ¡Mucha suerte!',
+        'Para andar, toca el suelo adonde quieras ir. Si se te olvida la pista, pulsa «Mis pistas». ¡Mucha suerte!',
       ],
-      otraVez: ['¡Ánimo! Si no sabes adónde ir, pulsa «Mis pistas» o «Llévame».'],
+      otraVez: ['¡Ánimo! Si se te olvida la pista, la tienes arriba y en «Mis pistas».'],
     },
     {
       id: 'paco', nombre: 'Paco Polo', papel: 'Del Punto Vuela', ...junto(1.2, 2),
       figura: { ropa: '#2E8B57', pantalon: '#4A4238', pelo: '#3A2618', piel: '#C98E62' },
       retrato: { piel: 'media', pelo: '#3A2618', peinado: 'corto', barba: 'bigote', ropa: '#2E8B57', escote: 'redondo', gesto: 'sonrisa', fondo: '#D8E8D0' },
-      lineas: ['[Aquí va la frase de Paco: me la tienes que pasar]'],
+      lineas: ['No, no, no, no te puedo sacar el certificado digital si no viene tu hermana aquí.'], // siempre lo mismo
     },
   ],
   paradas,
@@ -134,5 +134,7 @@ export const pizarra: DatosJuego = {
     titulo: '¡Recorrido completado!',
     texto: 'Has encontrado todas las pistas de Pizarra y has llegado hasta El Santo. Enhorabuena de parte de todo el Punto Vuela.',
   },
-  bienvenida: { lugar: 'Pizarra', texto: 'Estás en la puerta del Punto Vuela. Victoria y Paco te esperan para contarte de qué va el juego. Toca el suelo para andar, o pulsa «Llévame».' },
+  bienvenida: { lugar: 'Pizarra', texto: 'Estás en la puerta del Punto Vuela. Victoria y Paco te esperan para contarte de qué va el juego. Toca el suelo para andar.' },
+  primeraPista: 'La primera pista está en la plaza redonda del barrio nuevo, la que tiene un jardín en el centro.',
+  guiado: false, // sin flecha, sin «Llévame» y sin marcar el sitio: cada uno va por su cuenta con la pista
 };

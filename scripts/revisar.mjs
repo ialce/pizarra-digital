@@ -46,11 +46,10 @@ try {
         await p.waitForTimeout(300); continue;
       }
       if (await p.locator('.pj-dialogo:not([hidden])').count()) { await p.click('.pj-seguir'); await p.waitForTimeout(150); continue; }
-      const llevame = p.locator('.pj-llevame:not([hidden])');
-      if (await llevame.count()) {
-        const f0 = await fase(); await llevame.click();
-        // esperar a que llegue (se abre un diálogo) o a que pasen cuatro minutos
-        try { await p.waitForSelector('.pj-dialogo:not([hidden]), .pj-reto-capa:not([hidden])', { timeout: 240000 }); }
+      // El juego no lleva de la mano (sin «Llévame» a la vista): la prueba usa el mismo camino por dentro
+      {
+        const f0 = await fase(); await p.evaluate(() => document.getElementById('juego').prueba.llevame());
+        try { await p.waitForSelector('.pj-dialogo:not([hidden]), .pj-reto-capa:not([hidden]), .pj-panel:not([hidden])', { timeout: 240000 }); }
         catch { anotar(`${nombre}: ⚠ no llega al destino en la fase ${f0}`); errores.push('no llega'); break; }
         if (capturas < 3) { await p.screenshot({ path: `revision/${nombre}-llegada-${f0}.png` }); }
         continue;

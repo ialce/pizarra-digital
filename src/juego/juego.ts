@@ -50,6 +50,13 @@ export interface DatosJuego {
   paradas: Parada[];
   final: { lugar: string; x: number; z: number; lineas: string[]; titulo: string; texto: string };
   bienvenida: { lugar: string; texto: string };
+  /** La pista que da la guía para la primera parada. */
+  primeraPista: string;
+  /** Ayudas para llegar (flecha, «Llévame», marca dorada y camino en el mapa). Sin ellas (false), cada uno va
+   *  a la siguiente parada por su cuenta, solo con la pista. Por defecto, sí. */
+  guiado?: boolean;
+  /** «realista» (por defecto) o «pixel» (pixel-art con contornos, como La Hemeroteca). */
+  estilo?: 'realista' | 'pixel';
 }
 interface Partida { fase: number; fallos: number; x: number; z: number; hablados: string[] }
 
@@ -132,7 +139,8 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
       <button type="button" class="pj-llevame">Llévame</button>
       <button type="button" class="pj-hablar" hidden>Hablar</button>
     </div>
-    <p class="pj-ayuda">${tactil ? 'Toca el suelo para ir andando, o pulsa «Llévame»' : 'Haz clic en el suelo para ir andando, pulsa «Llévame» o usa las flechas del teclado'}</p>
+    <p class="pj-ayuda">${tactil ? 'Toca el suelo para ir andando, o arrastra el dedo como un mando' : 'Haz clic en el suelo para ir andando, o usa las flechas del teclado'}</p>
+    <div class="pj-joy" hidden aria-hidden="true"><div class="pj-joy-mando"></div></div>
     <div class="pj-aviso" aria-live="polite"></div>
     <section class="pj-dialogo" hidden aria-live="polite">
       <div class="pj-cara" aria-hidden="true"></div>
@@ -151,13 +159,16 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
   const lienzoCont = $('.pj-lienzo');
 
   // ---------- Escena ----------
-  const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(1);
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+  // Dos estilos: «realista» (resolución completa, bordes suaves, sombras suaves) o «pixel» (como la Hemeroteca)
+  const PIXEL = datos.estilo === 'pixel';
+  const renderer = new THREE.WebGLRenderer({ antialias: !PIXEL, stencil: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(PIXEL ? 1 : Math.min(devicePixelRatio, tactil ? 1.5 : 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = PIXEL ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+  if (!PIXEL) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; }
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   lienzoCont.appendChild(renderer.domElement);
   const lienzo = renderer.domElement;
-  Object.assign(lienzo.style, { width: '100%', height: '100%', display: 'block', imageRendering: 'pixelated', touchAction: 'none' });
+  Object.assign(lienzo.style, { width: '100%', height: '100%', display: 'block', imageRendering: PIXEL ? 'pixelated' : 'auto', touchAction: 'none' });
   const pixelado = crearPixelado(renderer);
   const escena = new THREE.Scene();
   const { mascara: M, animar, dibujarMapa } = datos.escena(escena);
@@ -229,6 +240,7 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
   let fase = guardada?.fase ?? 0, fallos = guardada?.fallos ?? 0;
   const hablados = new Set<string>(guardada?.hablados ?? []);
   const N = datos.paradas.length;
+  const GUIADO = datos.guiado ?? true;
   const guardar = () => almacen.set(CLAVE, { fase, fallos, x: pos.x, z: pos.z, hablados: [...hablados] } satisfies Partida);
 
   // ---------- Personajes, objetos de pista y marca del destino ----------
@@ -276,7 +288,7 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
   let ancho = 1, alto = 1;
   // en vertical (móvil), que quepan al menos 30 m de ancho
   const encuadrar = () => { const a = ancho / alto, m = vistoActual * Math.max(1, 0.9 / a) / 2; camara.left = -m * a; camara.right = m * a; camara.top = m; camara.bottom = -m; camara.updateProjectionMatrix(); };
-  const ajustar = () => { ancho = Math.max(1, lienzoCont.clientWidth); alto = Math.max(1, lienzoCont.clientHeight); pixelado.ajustar(ancho, alto, 3); encuadrar(); };
+  const ajustar = () => { ancho = Math.max(1, lienzoCont.clientWidth); alto = Math.max(1, lienzoCont.clientHeight); pixelado.ajustar(ancho, alto, 3, PIXEL); encuadrar(); };
   const colocarCamara = () => {
     const r = 150;
     camara.position.set(mira.x + r * Math.cos(elevacion) * Math.sin(azimut), mira.y + r * Math.sin(elevacion), mira.z + r * Math.cos(elevacion) * Math.cos(azimut));
@@ -309,23 +321,38 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
   const onBlur = () => teclas.clear();
   addEventListener('keydown', onKeyDown); addEventListener('keyup', onKeyUp); addEventListener('blur', onBlur);
 
-  // Tocar el suelo: andar hasta allí. Dos dedos: acercar o alejar. Arrastrar un dedo: mover la vista un poco no hace falta.
+  // Un dedo: si se arrastra, es un mando (joystick) donde se toca, como en el Corresponsal; si solo se toca, se anda
+  // hasta ese punto (o hasta la persona tocada). Dos dedos: acercar o alejar.
   const dedos = new Map<number, { x: number; y: number; x0: number; y0: number }>();
   let pellizco = 0;
+  const joy = { id: -1, x: 0, y: 0 };
+  const joyEl = $('.pj-joy'), mandoEl = $('.pj-joy-mando');
+  const soltarJoy = () => { joy.id = -1; joy.x = 0; joy.y = 0; joyEl.hidden = true; };
   const rayo = new THREE.Raycaster(), plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), punto = new THREE.Vector3(), ndc = new THREE.Vector2();
   lienzo.addEventListener('pointerdown', e => {
     sonido.activar(); lienzo.setPointerCapture(e.pointerId);
     dedos.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
-    if (dedos.size === 2) { const [a, b] = [...dedos.values()]; pellizco = Math.hypot(a.x - b.x, a.y - b.y); }
+    if (dedos.size === 2) { soltarJoy(); const [a, b] = [...dedos.values()]; pellizco = Math.hypot(a.x - b.x, a.y - b.y); }
   });
   lienzo.addEventListener('pointermove', e => {
     const d = dedos.get(e.pointerId); if (!d) return; d.x = e.clientX; d.y = e.clientY;
-    if (dedos.size === 2 && pellizco > 0) { const [a, b] = [...dedos.values()], n = Math.hypot(a.x - b.x, a.y - b.y); zoom(pellizco / n); pellizco = n; }
+    if (dedos.size === 2 && pellizco > 0) { const [a, b] = [...dedos.values()], n = Math.hypot(a.x - b.x, a.y - b.y); zoom(pellizco / n); pellizco = n; return; }
+    if (dedos.size !== 1 || ocupado()) return;
+    let dx = d.x - d.x0, dy = d.y - d.y0;
+    if (joy.id !== e.pointerId) {
+      if (Math.hypot(dx, dy) < 14) return; // todavía puede ser un toque
+      joy.id = e.pointerId; parar();
+      const r = raiz.getBoundingClientRect(); joyEl.hidden = false; joyEl.style.left = `${d.x0 - r.left}px`; joyEl.style.top = `${d.y0 - r.top}px`;
+    }
+    const l = Math.hypot(dx, dy), max = 50; if (l > max) { dx *= max / l; dy *= max / l; }
+    joy.x = dx / max; joy.y = -dy / max;
+    mandoEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
   });
   const soltar = (e: PointerEvent) => {
     const d = dedos.get(e.pointerId); const eraUno = dedos.size === 1; dedos.delete(e.pointerId); if (dedos.size < 2) pellizco = 0;
+    if (joy.id === e.pointerId) { soltarJoy(); return; }
     if (!d || !eraUno || e.type === 'pointercancel' || ocupado()) return;
-    if (Math.hypot(d.x - d.x0, d.y - d.y0) > 14) return; // era un arrastre, no un toque
+    if (Math.hypot(d.x - d.x0, d.y - d.y0) > 14) return;
     const r = lienzo.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     rayo.setFromCamera(ndc, camara); if (!rayo.ray.intersectPlane(plano, punto)) return;
@@ -393,13 +420,10 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
       cerrarDialogo(); guardar();
     }, 'Cerrar');
   };
-  /** La pista vigente, en grande, con el sitio al que ir. */
+  /** El texto de la pista vigente (la que lleva a la parada actual o al final). */
+  const pistaVigente = () => (fase === 1 ? datos.primeraPista : fase >= 2 && fase <= N + 1 ? datos.paradas[fase - 2].pista : '');
   const mostrarPista = () => {
-    const pd = parada();
-    if (pd) {
-      const anterior = fase >= 2 ? datos.paradas[fase - 2].pista : null;
-      decir(`Pista ${fase} de ${N}`, 'Dónde ir ahora', anterior ?? `Primera parada: ${pd.lugar}. Sigue la flecha amarilla o pulsa «Llévame».`, cerrarDialogo, 'Vamos');
-    } else if (fase === N + 1) decir('Última pista', 'Dónde ir ahora', datos.paradas[N - 1]?.pista ?? `Ve a ${datos.final.lugar}.`, cerrarDialogo, 'Vamos');
+    if (fase >= 1 && fase <= N + 1) decir(fase <= N ? `Pista ${fase} de ${N}` : 'Última pista', 'Adónde ir ahora', pistaVigente(), cerrarDialogo, 'Vamos');
   };
   const resolverParada = (pd: Parada) => {
     parar(); foco = new THREE.Vector3(pd.x, 0.8, pd.z);
@@ -426,8 +450,9 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
   const objetivo = () => {
     if (fase === 0) { const g = personajes.get(datos.guia)!; return { x: g.x, z: g.z, texto: `Habla con ${g.nombre}: te explica el juego.` }; }
     const pd = parada();
-    if (pd) return { x: pd.x, z: pd.z, texto: `Pista ${fase} de ${N}: ve a ${pd.lugar}.` };
-    if (fase === N + 1) return { x: datos.final.x, z: datos.final.z, texto: `Última parada: ${datos.final.lugar}.` };
+    // Sin ayudas, arriba solo sale la pista (no el nombre del sitio)
+    if (pd) return { x: pd.x, z: pd.z, texto: GUIADO ? `Pista ${fase} de ${N}: ve a ${pd.lugar}.` : `Pista ${fase} de ${N}: ${pistaVigente()}` };
+    if (fase === N + 1) return { x: datos.final.x, z: datos.final.z, texto: GUIADO ? `Última parada: ${datos.final.lugar}.` : `Última pista: ${pistaVigente()}` };
     return null;
   };
   let objetivoActual = objetivo();
@@ -436,7 +461,7 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
     $('.pj-objetivo').textContent = objetivoActual?.texto ?? '';
     $('[data-pj="pistas"] b').textContent = `${Math.max(0, Math.min(fase - 1, N))}/${N}`;
     if (objetivoActual) calcularCamino(objetivoActual.x, objetivoActual.z);
-    marca.visible = !!objetivoActual; if (objetivoActual) marca.position.set(objetivoActual.x, 0, objetivoActual.z);
+    marca.visible = GUIADO && !!objetivoActual; if (objetivoActual) marca.position.set(objetivoActual.x, 0, objetivoActual.z);
     objetos.forEach((o, i) => { if (o) o.visible = i === fase - 1; });
     const pd = parada(); if (pd && !pd.quien) marca.position.y = 1.6;
     haz.visible = !(fase === 0 || pd?.quien); // sobre una persona, el haz la taparía: basta el rombo
@@ -483,11 +508,11 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
     mctx.fillStyle = '#C9B47E'; mctx.fillRect(0, 0, MW, MH);
     const [fx, fz] = aM(LX0, LZ0); mctx.imageSmoothingEnabled = true; mctx.drawImage(fondo, fx, fz, LW * k, LH * k);
     // camino hasta el objetivo
-    if (rutaVista.length) {
+    if (GUIADO && rutaVista.length) {
       mctx.fillStyle = '#C41F12'; const cada = Math.max(2, Math.round((mapaGrande ? 8 : 2.5) / PR));
       for (let s = cada; s < rutaVista.length; s += cada) { const [a, b] = aM(celdaX(rutaVista[s]), celdaZ(rutaVista[s])); mctx.fillRect(a - 1.5, b - 1.5, 3, 3); }
     }
-    if (objetivoActual) { const [a, b] = aM(objetivoActual.x, objetivoActual.z); mctx.fillStyle = '#E8B83A'; mctx.strokeStyle = '#111'; mctx.lineWidth = 2; mctx.beginPath(); mctx.arc(a, b, 7 + Math.sin(t * 5) * 1.5, 0, Math.PI * 2); mctx.fill(); mctx.stroke(); }
+    if (GUIADO && objetivoActual) { const [a, b] = aM(objetivoActual.x, objetivoActual.z); mctx.fillStyle = '#E8B83A'; mctx.strokeStyle = '#111'; mctx.lineWidth = 2; mctx.beginPath(); mctx.arc(a, b, 7 + Math.sin(t * 5) * 1.5, 0, Math.PI * 2); mctx.fill(); mctx.stroke(); }
     const [px, pz] = aM(pos.x, pos.z), a = yo.grupo.rotation.y;
     mctx.save(); mctx.translate(px, pz); mctx.rotate(-a + Math.PI);
     mctx.fillStyle = '#C41F12'; mctx.strokeStyle = '#fff'; mctx.lineWidth = 2;
@@ -534,7 +559,7 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
   const VELOCIDAD = 6.5;
   const bucle = (ahora: number) => {
     const dt = Math.min(0.05, (ahora - previo) / 1000), dtMov = Math.min(0.25, (ahora - previo) / 1000); previo = ahora; const t = ahora / 1000; // dtMov: aunque el aparato vaya a pocos fotogramas, se anda a la misma velocidad
-    let ix = 0, iy = 0;
+    let ix = joy.x, iy = joy.y;
     if (teclas.has('a') || teclas.has('arrowleft')) ix -= 1;
     if (teclas.has('d') || teclas.has('arrowright')) ix += 1;
     if (teclas.has('w') || teclas.has('arrowup')) iy += 1;
@@ -603,7 +628,7 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
     const vd = visto * (foco ? 0.7 : 1);
     if (Math.abs(vistoActual - vd) > 0.01) { vistoActual += (vd - vistoActual) * Math.min(1, dt * 4); encuadrar(); }
     colocarCamara();
-    pixelado.dibujar(escena, camara, true, dibujarFantasmas);
+    pixelado.dibujar(escena, camara, PIXEL, dibujarFantasmas);
 
     // ruta hasta el objetivo (para la flecha y el mapa), cinco veces por segundo
     if (objetivoActual && ahora - ultimaRuta > 200) { ultimaRuta = ahora; calcularCamino(objetivoActual.x, objetivoActual.z); rutaVista = caminoDesde(pos.x, pos.z); }
@@ -612,10 +637,10 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
     const c = ocupado() ? null : cerca();
     botonHablar.hidden = !c;
     if (c) botonHablar.textContent = c.tipo === 'persona' ? `Hablar con ${c.p.nombre}` : c.tipo === 'objeto' ? 'Ver la pista' : 'Llegar';
-    botonLlevame.hidden = ocupado() || !objetivoActual;
+    botonLlevame.hidden = !GUIADO || ocupado() || !objetivoActual;
     botonLlevame.textContent = auto ? 'Andando…' : fase === 0 ? `Llévame con ${personajes.get(datos.guia)!.nombre}` : 'Llévame a la pista';
     // flecha amarilla junto al jugador, señalando el camino de verdad (por las calles)
-    if (objetivoActual && rutaVista.length > 6 && !ocupado()) {
+    if (GUIADO && objetivoActual && rutaVista.length > 6 && !ocupado()) {
       let g = rutaVista[0];
       for (let s = 1; s < Math.min(rutaVista.length, 30); s++) { if (despejado(pos.x, pos.z, celdaX(rutaVista[s]), celdaZ(rutaVista[s]))) g = rutaVista[s]; else break; }
       proy.set(celdaX(g), 0.6, celdaZ(g)).project(camara); const gx = (proy.x + 1) / 2 * ancho, gy = (1 - proy.y) / 2 * alto;

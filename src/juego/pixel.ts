@@ -66,6 +66,7 @@ export function crearPixelado(renderer: THREE.WebGLRenderer) {
       const lw = Math.max(1, Math.floor(ancho / tamPixel)), lh = Math.max(1, Math.floor(alto / tamPixel));
       renderer.setSize(pixel ? lw : ancho, pixel ? lh : alto, false);
       rtColor?.dispose(); rtNormal?.dispose();
+      if (!pixel) { rtColor = rtNormal = undefined; return; } // sin pixel-art no hacen falta
       const opc = { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false };
       const prof = new THREE.DepthTexture(lw, lh, THREE.UnsignedInt248Type); prof.format = THREE.DepthStencilFormat; // con stencil: para las siluetas de la gente
       rtColor = new THREE.WebGLRenderTarget(lw, lh, { ...opc, depthTexture: prof, stencilBuffer: true });
@@ -75,7 +76,7 @@ export function crearPixelado(renderer: THREE.WebGLRenderer) {
     },
     /** `encima`: se llama con la pasada de color aún activa (para pintar siluetas sobre lo ya dibujado). */
     dibujar(escena: THREE.Scene, camara: THREE.Camera, pixel = true, encima?: () => void) {
-      if (!pixel || !rtColor || !rtNormal) { renderer.setRenderTarget(null); renderer.render(escena, camara); return; }
+      if (!pixel || !rtColor || !rtNormal) { renderer.setRenderTarget(null); renderer.render(escena, camara); encima?.(); return; }
       renderer.setRenderTarget(rtColor); renderer.render(escena, camara); encima?.();
       escena.overrideMaterial = materialNormal;
       renderer.setRenderTarget(rtNormal); renderer.render(escena, camara);
