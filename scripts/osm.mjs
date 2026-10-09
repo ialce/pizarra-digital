@@ -132,6 +132,12 @@ for (const c of calles) {
 const lugares = {};
 const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 for (const n of nodosConEtiquetas) if (n.t.name && (n.t.amenity || n.t.shop || n.t.tourism || n.t.railway === 'station' || n.t.place)) lugares[slug(n.t.name)] = { x: n.p[0], z: n.p[1], nombre: n.t.name };
+// Edificios y recintos con nombre (ayuntamiento, colegio, iglesia, teatro…): su centro
+for (const v of vias) if (v.t.name && v.puntos.length > 2 && (v.t.amenity || v.t.tourism || v.t.historic || v.t.leisure || v.t.building || v.t.place)) {
+  const p = cerrada(v.puntos) ? v.puntos.slice(0, -1) : v.puntos;
+  lugares[slug(v.t.name)] ??= { x: +(p.reduce((a, q) => a + q[0], 0) / p.length).toFixed(1), z: +(p.reduce((a, q) => a + q[1], 0) / p.length).toFixed(1), nombre: v.t.name };
+}
+for (const n of nodosConEtiquetas) if (n.t.amenity === 'post_office') lugares['correos'] ??= { x: n.p[0], z: n.p[1], nombre: n.t.name ?? 'Correos' };
 for (const c of calles) if (c.nombre) { const m = c.puntos[Math.floor(c.puntos.length / 2)]; lugares[slug(c.nombre)] ??= { x: m[0], z: m[1], nombre: c.nombre }; }
 
 // Fuera las casas sueltas a lo largo de caminos de fuera del pueblo: cada casa necesita vecinas a menos de 60 m

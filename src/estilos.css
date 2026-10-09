@@ -125,3 +125,24 @@ button{font-family:inherit}
   .pj-boton{padding:.3rem .6rem;font-size:.85rem}
 }
 @media (prefers-reduced-motion:reduce){.pj-mapa,.pj-aviso{transition:none}.pj-ficha.temblar{animation:none}}
+
+/* ---------- Capítulos ---------- */
+.portada-caja{max-width:720px}
+.capitulos{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:14px}
+.capitulo{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;border:3px solid var(--tinta);padding:14px;background:var(--cal)}
+.capitulo-num{width:56px;height:56px;display:grid;place-items:center;font-size:1.6rem;font-weight:700;border:3px solid var(--verde);color:var(--verde);background:#fff}
+.capitulo-cuerpo{display:grid;gap:8px;min-width:0}
+.capitulo h2{margin:0;font-size:1.35rem;line-height:1.15}
+.capitulo p{margin:0}
+.capitulo-estado{font-weight:700;font-size:.9rem;color:var(--gris)}
+.capitulo-nota{color:var(--gris);font-size:.95rem}
+.capitulo-botones{display:flex;flex-wrap:wrap;gap:10px}
+.capitulo[data-estado="hecho"]{border-color:var(--verde)}
+.capitulo[data-estado="hecho"] .capitulo-num{background:var(--verde);color:#fff}
+.capitulo[data-estado="hecho"] .capitulo-estado{color:var(--verde)}
+.capitulo[data-estado="medias"]{border-color:var(--oro)}
+.capitulo[data-estado="medias"] .capitulo-estado{color:#8A6A10}
+.capitulo[data-estado="cerrado"]{border-style:dashed;background:#EFEBE2}
+.capitulo[data-estado="cerrado"] .capitulo-num{border-color:var(--gris);color:var(--gris)}
+.capitulo[data-estado="cerrado"] h2{color:var(--gris)}
+@media (max-width:600px){.capitulo{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:12px}.capitulo-num{width:44px;height:44px;font-size:1.3rem}}

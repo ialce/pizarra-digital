@@ -1,7 +1,7 @@
-// El juego de Pizarra: personajes, paradas con sus retos y el final en El Santo.
-// ⚠ PROVISIONAL: los textos de Victoria y Paco, las paradas, los retos y las pistas son de ejemplo
-// hasta que Iván pase los de verdad. Las posiciones están en metros del plano (ver pueblo.json → lugares).
+// Lo común a todos los capítulos (el pueblo, el Punto Vuela, Victoria, Paco y El Santo) y cómo se monta un capítulo
+// a partir de su contenido (src/pizarra/capitulos/<id>.ts). Las posiciones están en metros del plano (pueblo.json).
 import type { DatosJuego, Parada } from '../juego/juego';
+import { CAPITULOS } from './capitulos';
 import { construirPueblo, cartel, monumento, type Pueblo } from './pueblo';
 import type { Mascara } from '../juego/juego';
 import pueblo from './pueblo.json';
@@ -33,69 +33,39 @@ const junto = (a: number, n: number) => ({ x: +(PV.x + ux * a + nx * n).toFixed(
 // El Santo: coordenadas que dio Iván (36.770116, −4.696597)
 const santo = P.lugares['el-santo'];
 if (!dentro(santo)) throw new Error('El Santo se sale del plano');
-const p = (nombre: string, t?: number) => calle(nombre, t);
+/** Un sitio con nombre del plano (Correos, el Ayuntamiento…), llevado al punto de calle más cercano para poder llegar andando. */
+function sitio(clave: string) {
+  const l = P.lugares[clave]; if (!l) throw new Error(`No está el sitio «${clave}» en el plano`);
+  let mejor = { x: l.x, z: l.z }, dm = Infinity;
+  for (const c of P.calles) {
+    if (c.tipo === 'carretera' || c.tipo === 'camino') continue;
+    for (let i = 0; i < c.puntos.length - 1; i++) {
+      const [ax, az] = c.puntos[i], [bx, bz] = c.puntos[i + 1], dx = bx - ax, dz = bz - az, l2 = dx * dx + dz * dz || 1;
+      const t = Math.max(0, Math.min(1, ((l.x - ax) * dx + (l.z - az) * dz) / l2)), x = ax + t * dx, z = az + t * dz, d = Math.hypot(x - l.x, z - l.z);
+      if (d < dm) { dm = d; mejor = { x: +x.toFixed(1), z: +z.toFixed(1) }; }
+    }
+  }
+  if (dm > 70) throw new Error(`«${clave}» queda a ${Math.round(dm)} m de la calle más cercana`);
+  return mejor;
+}
+
+/** Lo que cambia en cada capítulo. Recibe las ayudas para colocar las paradas por nombre de calle o de sitio. */
+export type ContenidoCapitulo = (ayudas: { calle: typeof calle; sitio: typeof sitio }) => {
+  victoria: string[]; primeraPista: string; paradas: Parada[];
+  final: { lineas: string[]; titulo: string; texto: string };
+};
 const bloquearCaja = (m: Mascara, x: number, z: number, r: number) => {
   for (let j = Math.floor((z - r - m.z0) / m.paso); j <= Math.floor((z + r - m.z0) / m.paso); j++)
     for (let i = Math.floor((x - r - m.x0) / m.paso); i <= Math.floor((x + r - m.x0) / m.paso); i++) if (i >= 0 && j >= 0 && i < m.ancho && j < m.alto) m.bloqueado[j * m.ancho + i] = 1;
 };
 
-const paradas: Parada[] = [
-  {
-    id: 'plaza-espana', lugar: 'la Plaza de España', ...p('Plaza de España', 0), objeto: 'movil',
-    lineas: ['¡Un móvil abandonado en la plaza! Tiene un mensaje en la pantalla…', '«Su paquete está retenido en Correos. Pague 1,99 € en este enlace para recibirlo.»'],
-    reto: {
-      tipo: 'una', titulo: '¿Qué hacemos con el mensaje?', enunciado: 'Te llega este mensaje al móvil y no esperabas ningún paquete. ¿Qué haces?',
-      opciones: [
-        { texto: 'No toco el enlace y borro el mensaje', bien: true },
-        { texto: 'Pago, total es poco dinero', porque: 'Cuidado: es un engaño para quedarse con los datos de tu tarjeta.' },
-        { texto: 'Contesto con mi nombre y mi DNI', porque: 'Nunca des tus datos a quien no conoces. Es un engaño.' },
-      ],
-      bien: '¡Eso es! Correos nunca te pide pagar por un enlace en un mensaje.',
-    },
-    pista: 'Busca la avenida larga con una fila de árboles en medio. Por la mitad, alguien se ha dejado un ordenador.',
-  },
-  {
-    id: 'avenida-europa', lugar: 'la Avenida de Europa', ...p('Avenida de Europa', 0.4), objeto: 'ordenador',
-    lineas: ['Un ordenador en mitad de la avenida. Pide una contraseña nueva para entrar.'],
-    reto: {
-      tipo: 'elegir', titulo: 'Contraseñas seguras', enunciado: '¿Cuáles de estas contraseñas son seguras?',
-      opciones: [
-        { texto: 'Olivo-Pizarra-27!', bien: true },
-        { texto: 'Gato*Verde*Mesa*9', bien: true },
-        { texto: '123456', bien: false, porque: '«123456» es la primera que prueban los ladrones.' },
-        { texto: 'Tu fecha de nacimiento', bien: false, porque: 'La fecha de nacimiento la puede saber cualquiera.' },
-        { texto: 'contraseña', bien: false, porque: '«contraseña» es de las más usadas: nada segura.' },
-      ],
-      ayuda: 'Las seguras son largas y mezclan palabras, números y símbolos.',
-      bien: '¡Muy bien! Larga, con palabras sueltas, números y algún símbolo.',
-    },
-    pista: 'Ahora ve hacia las calles con nombre de país del sur del barrio. En la de los dioses del Olimpo te espera una tableta.',
-  },
-  {
-    id: 'calle-grecia', lugar: 'la Calle Grecia', ...p('Calle Grecia', 0.5), objeto: 'tableta',
-    lineas: ['Una tableta con una foto preciosa del pueblo. ¿Cómo se la mandamos a la familia por WhatsApp?'],
-    reto: {
-      tipo: 'ordenar', titulo: 'Mandar una foto', enunciado: 'Pon los pasos en orden para enviar una foto por WhatsApp.',
-      pasos: ['Abrir WhatsApp', 'Entrar en la conversación de la persona', 'Tocar el clip o la cámara', 'Elegir la foto', 'Pulsar el botón de enviar'],
-      bien: '¡Foto enviada!',
-    },
-    pista: 'Sube hasta la plaza que lleva el nombre de un cantautor granadino. Allí hay un sobre.',
-  },
-  {
-    id: 'carlos-cano', lugar: 'la Plaza de Carlos Cano', ...p('Plaza de Carlos Cano', 0), objeto: 'sobre',
-    lineas: ['Dentro del sobre hay una nota con atajos de teclado y sus nombres mezclados.'],
-    reto: {
-      tipo: 'relacionar', titulo: 'Atajos de teclado', enunciado: 'Une cada atajo con lo que hace.',
-      parejas: [['Ctrl + C', 'Copiar'], ['Ctrl + V', 'Pegar'], ['Ctrl + Z', 'Deshacer']],
-      bien: '¡Perfecto! Con estos tres atajos ya te manejas mejor que muchos.',
-    },
-    pista: '¡Ya solo queda la última parada! Ve a El Santo, el sitio que más quieren los pizarreños.',
-  },
-];
-
-export const pizarra: DatosJuego = {
-  id: 'pizarra',
-  titulo: 'Pizarra Digital',
+/** Monta el capítulo `id` con el contenido de su fichero. */
+export function capitulo(id: string, contenido: ContenidoCapitulo): DatosJuego {
+  const info = CAPITULOS.find(c => c.id === id)!;
+  const c = contenido({ calle, sitio });
+  return {
+  id,
+  titulo: `Capítulo ${info.numero} · ${info.titulo}`,
   escena: e => {
     const r = construirPueblo(P)(e);
     // Cartel del Punto Vuela, en la acera, mirando a la calle
@@ -113,12 +83,7 @@ export const pizarra: DatosJuego = {
       // dibujada a partir de su foto: melena rizada con flequillo y mechón rubio, gafas finas con esquinas rosas, leopardo
       figura: { ropa: '#A8743F', pantalon: '#1E1C1A', pelo: '#3A2318', pelolargo: true, rizado: true, gafas: true, piel: '#EFC6AE' },
       retrato: { piel: '#EFC6AE', pelo: '#3A2318', peinado: 'melena', mechon: '#D9B56E', ropa: '#B5824C', estampado: 'leopardo', extra: ['gafasFinas'], gafasColor: '#E0306A', ojos: '#4E8C8A', gesto: 'dientes', fondo: '#BFDAD6' },
-      lineas: [
-        '¡Hola! Soy Victoria, la profesora del Punto Vuela. Bienvenido al juego de Pizarra Digital.',
-        'Vas a recorrer el pueblo buscando pistas. En cada sitio hay un pequeño reto de ordenadores, móviles e internet.',
-        'Cada reto que superes te dice dónde está la siguiente pista. La última te lleva hasta El Santo.',
-        'Para andar, toca el suelo adonde quieras ir. Si se te olvida la pista, pulsa «Mis pistas». ¡Mucha suerte!',
-      ],
+      lineas: c.victoria,
       otraVez: ['¡Ánimo! Si se te olvida la pista, la tienes arriba y en «Mis pistas».'],
     },
     {
@@ -129,14 +94,10 @@ export const pizarra: DatosJuego = {
       lineas: ['No, no, no, no puedo sacarte el certificado digital de tu hermana si no viene ella aquí.'], // siempre lo mismo
     },
   ],
-  paradas,
-  final: {
-    lugar: 'El Santo', x: santo.x, z: santo.z,
-    lineas: ['¡Has llegado a El Santo, el rincón más querido de Pizarra!', 'Has resuelto todas las pistas por el pueblo. ¡Ya te manejas con el ordenador y el móvil!'],
-    titulo: '¡Recorrido completado!',
-    texto: 'Has encontrado todas las pistas de Pizarra y has llegado hasta El Santo. Enhorabuena de parte de todo el Punto Vuela.',
-  },
-  bienvenida: { lugar: 'Pizarra', texto: 'Estás en la puerta del Punto Vuela. Victoria y Paco te esperan para contarte de qué va el juego. Toca el suelo para andar.' },
-  primeraPista: 'La primera pista está en la plaza redonda del barrio nuevo, la que tiene un jardín en el centro.',
+  paradas: c.paradas,
+  final: { lugar: 'El Santo', x: santo.x, z: santo.z, ...c.final },
+  bienvenida: { lugar: `Capítulo ${info.numero}`, texto: `${info.titulo}. Estás en la puerta del Punto Vuela: Victoria te espera para contarte el tema de hoy. Toca el suelo para andar.` },
+  primeraPista: c.primeraPista,
   guiado: false, // sin flecha, sin «Llévame» y sin marcar el sitio: cada uno va por su cuenta con la pista
-};
+  };
+}

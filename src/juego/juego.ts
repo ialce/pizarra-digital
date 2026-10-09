@@ -539,6 +539,8 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
   const terminar = () => {
     callar(); dlg.hidden = true; foco = new THREE.Vector3(datos.final.x, 1, datos.final.z);
     sonido.fanfarria(); marca.visible = false;
+    // capítulo superado: lo apunta para la pantalla de capítulos (se guarda el mejor resultado)
+    { const antes = almacen.get<{ fallos: number }>(`pd-hecho-${datos.id}`); if (!antes || fallos < antes.fallos) almacen.set(`pd-hecho-${datos.id}`, { fallos, fecha: new Date().toISOString().slice(0, 10) }); }
     panel.hidden = false;
     panel.innerHTML = `<article class="pj-hoja pj-diploma">
       <p class="pj-dato">${esc(datos.titulo)}</p>
