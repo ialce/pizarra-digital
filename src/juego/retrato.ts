@@ -6,16 +6,19 @@ export type Piel = 'clara' | 'media' | 'morena' | 'oscura';
 export interface Retrato {
   piel?: Piel | string;
   pelo?: string;                                                       // color
-  peinado?: 'corto' | 'largo' | 'rapado' | 'calvo' | 'mono' | 'raya';  // «mono»: recogido detrás; «raya»: corto con raya (siglo XX)
+  peinado?: 'corto' | 'largo' | 'rapado' | 'calvo' | 'mono' | 'raya' | 'rizado' | 'melena'; // «melena»: larga y rizada con flequillo corto // «rizado»: rizos cortos con volumen arriba  // «mono»: recogido detrás; «raya»: corto con raya (siglo XX)
   barba?: 'no' | 'corta' | 'larga' | 'bigote';                          // «larga»: barba sumeria en tirabuzones
   tocado?: 'no' | 'sombrero' | 'cinta' | 'gorro' | 'cuernos' | 'tiara' | 'velo' | 'nemes' | 'peluca';
   // «cuernos»: tiara de cuernos de los dioses mesopotámicos; «tiara»: diadema de oro; «velo»: pañuelo sobre el pelo;
   // «nemes»: tocado a rayas de faraón (y Esfinge); «peluca»: peluca egipcia negra cortada a la altura de la mandíbula
   ropa?: string; ribete?: string;
-  escote?: 'redondo' | 'hombro' | 'chaqueta';                          // «hombro»: túnica sobre un solo hombro; «chaqueta»: americana y camisa
-  extra?: ('collar' | 'gafas' | 'estrella' | 'pendientes' | 'calamo')[];
+  escote?: 'redondo' | 'hombro' | 'chaqueta' | 'americana'; // «americana»: americana y camisa blanca abierta, sin corbata                          // «hombro»: túnica sobre un solo hombro; «chaqueta»: americana y camisa
+  extra?: ('collar' | 'gafas' | 'gafasPasta' | 'gafasFinas' | 'estrella' | 'pendientes' | 'calamo')[]; // «gafasPasta»: montura negra gruesa; «gafasFinas»: metálicas
+  /** Mechón de otro color en el flequillo (con «melena»). */ mechon?: string;
+  /** Color de las esquinas de las «gafasFinas». */ gafasColor?: string;
+  /** Estampado de la ropa. */ estampado?: 'leopardo';
   ojos?: string;
-  gesto?: 'serio' | 'sonrisa';
+  gesto?: 'serio' | 'sonrisa' | 'dientes'; // «dientes»: sonrisa abierta
   fondo?: string;
 }
 
@@ -50,11 +53,21 @@ export function rejillaRetrato(s: Retrato): (string | null)[][] {
   const oro = '#E2B53A', oroS = '#A9801F';
 
   // Pelo largo por detrás (antes que la cara)
+  if (peinado === 'melena') area((x, y) => y >= 6 && y <= 30 && (ell(16, 16, 10.5, 13.5, x, y) || (y >= 24 && Math.abs(x + 0.5 - 16) <= 10.5)) && !(y >= 25 && Math.abs(x + 0.5 - 16) <= 6.5 + (y - 25) * 0.2),
+    (x, y) => ((x * 5 + y * 3) % 6 === 0 ? peloL : (x + 2 * y) % 4 === 0 ? peloS : x < 9 || x > 22 ? peloS : pelo));
   if (peinado === 'largo') area((x, y) => y >= 8 && y <= 26 && ell(16, 15, 9, 12, x, y), (x) => (x < 12 || x > 20 ? peloS : pelo));
   if (tocado === 'velo') area((x, y) => y >= 5 && y <= 28 && ell(16, 16, 9.5, 13, x, y), (x) => (x < 11 ? tono(s.ribete ?? '#E8DCC0', -0.2) : s.ribete ?? '#E8DCC0'));
 
   // Ropa: hombros
   area((x, y) => y >= 25 && Math.abs(x + 0.5 - 16) <= 8 + (y - 25) * 1.6, (x, y) => (Math.abs(x + 0.5 - 16) > 6 + (y - 25) * 1.6 ? ropaS : y === 26 && x > 17 ? ropaL : ropa));
+  if (s.estampado === 'leopardo') {
+    // manchas de leopardo: anillos negros con el centro marrón, repartidos sin orden aparente
+    for (let y = 25; y < W; y++) for (let x = 0; x < W; x++) {
+      if (!g[y][x]) continue;
+      const k = ((x >> 1) * 7 + (y >> 1) * 5) % 6;   // manchas de 2 × 2
+      if (k === 0) put(x, y, (x + y) % 2 ? '#1A1310' : '#2A1C14'); else if (k === 3 && (x + y) % 2) put(x, y, '#6A4222');
+    }
+  }
   if ((s.escote ?? 'redondo') === 'redondo') {
     area((x, y) => y >= 25 && y <= 26 && Math.abs(x + 0.5 - 16) <= 3 - (y - 25), piel);
     area((x, y) => (y === 25 && Math.abs(x + 0.5 - 16) > 3 && Math.abs(x + 0.5 - 16) <= 4) || (y === 26 && Math.abs(x + 0.5 - 16) > 2 && Math.abs(x + 0.5 - 16) <= 3) || (y === 27 && Math.abs(x + 0.5 - 16) <= 2), ribete);
@@ -62,6 +75,11 @@ export function rejillaRetrato(s: Retrato): (string | null)[][] {
     // un hombro al aire (el izquierdo de la imagen) y la tela cruzando en diagonal
     area((x, y) => y >= 25 && x < 16 - (y - 25) * 0.9 && Math.abs(x + 0.5 - 16) <= 8 + (y - 25) * 1.6, (x) => (x < 6 ? pS : piel));
     area((x, y) => y >= 25 && Math.abs(x - (16 - (y - 25) * 0.9)) < 1, ribete);
+  } else if (s.escote === 'americana') {
+    area((x, y) => y >= 25 && Math.abs(x + 0.5 - 16) <= 2.6 + (y - 25) * 0.55, (x, y) => (Math.abs(x + 0.5 - 16) > 1.6 + (y - 25) * 0.55 ? '#DCD8CE' : '#F4F2EC')); // camisa abierta
+    area((x, y) => y >= 25 && y <= 27 && Math.abs(x + 0.5 - 16) <= 1.2 - (y - 25) * 0.5, piel);                                        // cuello sin corbata
+    area((x, y) => y >= 26 && Math.abs(Math.abs(x + 0.5 - 16) - (3.1 + (y - 26) * 0.6)) < 0.7, ropaS);                                  // solapas
+    put(18, 29, '#F4F2EC'); put(19, 29, '#F4F2EC');                                                                                    // pañuelo del bolsillo
   } else if (s.escote === 'chaqueta') {
     area((x, y) => y >= 25 && Math.abs(x + 0.5 - 16) <= 2.2 - (y - 25) * 0.15 + (y - 25) * 0.5, '#EEE8DA'); // camisa
     area((x, y) => y >= 26 && Math.abs(x + 0.5 - 16) < 0.8, '#7A2A22');                                // corbata
@@ -77,10 +95,25 @@ export function rejillaRetrato(s: Retrato): (string | null)[][] {
   for (const ox of [13, 19]) { put(ox, 14, ojos); put(ox + (ox < 16 ? -1 : 1), 14, '#F1EADB'); put(ox, 12, peloS); put(ox + (ox < 16 ? -1 : 1), 12, peloS); }
   put(16, 15, pS); put(16, 16, pS); put(17, 16, tono(piel, -0.28));
   const boca = tono(piel, -0.4);
-  if (s.gesto === 'sonrisa') { put(14, 18, boca); put(15, 19, boca); put(16, 19, boca); put(17, 19, boca); put(18, 18, boca); }
+  if (s.gesto === 'dientes') { put(14, 18, boca); put(18, 18, boca); for (let x = 15; x <= 17; x++) { put(x, 18, '#F6F1E6'); put(x, 19, boca); } }
+  else if (s.gesto === 'sonrisa') { put(14, 18, boca); put(15, 19, boca); put(16, 19, boca); put(17, 19, boca); put(18, 18, boca); }
   else { put(15, 19, boca); put(16, 19, boca); put(17, 19, boca); }
 
   // Pelo
+  if (peinado === 'rizado') {
+    // rizos: masa algo más alta que la cabeza, con bucles claros y oscuros alternos y un mechón que cae a la frente
+    area((x, y) => ell(16, 10, 8.4, 7.4, x, y) && (y <= 9 || (y <= 12 && (x <= 10 || x >= 21))) && y >= 2, (x, y) => ((x * 3 + y * 5) % 7 === 0 ? peloL : (x + y) % 3 === 0 ? peloS : pelo));
+    for (const x of [9, 12, 15, 18, 21]) put(x, 2 + (x % 2), pelo);   // bucles sueltos por arriba
+    put(17, 10, pelo); put(18, 10, peloS);                           // rizo que cae a la frente
+  }
+  if (peinado === 'melena') {
+    // arriba, la masa de rizos; flequillo corto y recto a media frente, con un mechón claro a la izquierda
+    area((x, y) => ell(16, 11, 7.8, 7.6, x, y) && y <= 9, (x, y) => ((x * 3 + y * 5) % 7 === 0 ? peloL : x <= 10 ? peloS : pelo));
+    area((x, y) => (x <= 10 || x >= 21) && y >= 8 && y <= 22 && ell(16, 14, 8.6, 10, x, y), (x, y) => ((x + y) % 3 === 0 ? peloS : pelo));
+    // flequillo corto y recto, con el borde de abajo un poco dentado
+    area((x, y) => x >= 10 && x <= 21 && y >= 7 && (y <= 9 || (y === 10 && x % 2 === 0)), (x, y) => (y === 7 && (x * 3) % 5 === 0 ? peloL : pelo));
+    if (s.mechon) area((x, y) => x >= 11 && x <= 13 && y >= 6 && (y <= 9 || (y === 10 && x === 12)), (x) => (x === 13 ? tono(s.mechon!, -0.15) : s.mechon!));
+  }
   if (peinado === 'corto' || peinado === 'largo' || peinado === 'mono' || peinado === 'raya')
     area((x, y) => ell(16, 11.5, 7.2, 7.4, x, y) && (y <= 8 || (y <= 12 && (x <= 10 || x >= 21))), (x, y) => (y <= 6 && x >= 15 ? peloL : x <= 10 ? peloS : pelo));
   if (peinado === 'raya') { for (let y = 5; y <= 8; y++) put(12, y, peloS); area((x, y) => y === 9 && x >= 13 && x <= 20, pelo); }
@@ -122,6 +155,18 @@ export function rejillaRetrato(s: Retrato): (string | null)[][] {
     put(16, 7, '#C41F12'); put(16, 6, oro); // la cobra (ureo)
   }
   // Extras
+  if (extra.includes('gafasFinas')) {
+    const m = '#C9A46A', esquina = s.gafasColor ?? m;
+    for (const [x0, x1] of [[10, 15], [17, 22]]) { area((x, y) => ((y === 12 || y === 16) && x > x0 && x < x1) || ((x === x0 || x === x1) && y > 12 && y < 16), m); }
+    put(16, 13, m);
+    for (const [x, y] of [[22, 12], [21, 12], [22, 13], [10, 15], [10, 16], [11, 16]]) put(x, y, esquina); // esquinas de color
+    put(16, 15, pS);
+  }
+  if (extra.includes('gafasPasta')) {
+    const m = '#141210';
+    for (const [x0, x1] of [[10, 15], [17, 22]]) { area((x, y) => (y === 12 || y === 16) && x >= x0 && x <= x1, m); area((x, y) => (x === x0 || x === x1) && y >= 12 && y <= 16, m); }
+    put(16, 13, m); put(9, 13, m); put(23, 13, m);
+  }
   if (extra.includes('gafas')) {
     for (const [x0, x1] of [[11, 14], [18, 21]]) { area((x, y) => (y === 13 || y === 15) && x >= x0 && x <= x1, '#1E1A16'); put(x0 - 1, 14, '#1E1A16'); put(x1 + 1, 14, '#1E1A16'); }
     put(16, 14, '#1E1A16'); put(15, 14, '#1E1A16');

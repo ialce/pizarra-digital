@@ -110,8 +110,9 @@ export const pizarra: DatosJuego = {
   personajes: [
     {
       id: 'victoria', nombre: 'Victoria', papel: 'Profesora del Punto Vuela', ...junto(-1.2, 2),
-      figura: { ropa: '#8C4A6B', pantalon: '#2F3A4C', pelo: '#5A3A22', pelolargo: true, falda: true, piel: '#E2B08A' },
-      retrato: { piel: 'clara', pelo: '#5A3A22', peinado: 'largo', ropa: '#8C4A6B', escote: 'redondo', extra: ['pendientes'], gesto: 'sonrisa', fondo: '#F1DCC8' },
+      // dibujada a partir de su foto: melena rizada con flequillo y mechón rubio, gafas finas con esquinas rosas, leopardo
+      figura: { ropa: '#A8743F', pantalon: '#1E1C1A', pelo: '#3A2318', pelolargo: true, rizado: true, gafas: true, piel: '#EFC6AE' },
+      retrato: { piel: '#EFC6AE', pelo: '#3A2318', peinado: 'melena', mechon: '#D9B56E', ropa: '#B5824C', estampado: 'leopardo', extra: ['gafasFinas'], gafasColor: '#E0306A', ojos: '#4E8C8A', gesto: 'dientes', fondo: '#BFDAD6' },
       lineas: [
         '¡Hola! Soy Victoria, la profesora del Punto Vuela. Bienvenido al juego de Pizarra Digital.',
         'Vas a recorrer el pueblo buscando pistas. En cada sitio hay un pequeño reto de ordenadores, móviles e internet.',
@@ -122,8 +123,9 @@ export const pizarra: DatosJuego = {
     },
     {
       id: 'paco', nombre: 'Paco Polo', papel: 'Del Punto Vuela', ...junto(1.2, 2),
-      figura: { ropa: '#2E8B57', pantalon: '#4A4238', pelo: '#3A2618', piel: '#C98E62' },
-      retrato: { piel: 'media', pelo: '#3A2618', peinado: 'corto', barba: 'bigote', ropa: '#2E8B57', escote: 'redondo', gesto: 'sonrisa', fondo: '#D8E8D0' },
+      // dibujado a partir de su foto: pelo rizado, gafas de pasta negras, americana azul marino y camisa blanca
+      figura: { ropa: '#1F2A44', camisa: '#F4F2EC', pantalon: '#2E3440', pelo: '#2A1F18', rizado: true, gafas: true, piel: '#C99472' },
+      retrato: { piel: '#C99472', pelo: '#2A1F18', peinado: 'rizado', escote: 'americana', ropa: '#1F2A44', extra: ['gafasPasta'], gesto: 'dientes', fondo: '#E9C7B8' },
       lineas: ['No, no, no, no te puedo sacar el certificado digital si no viene tu hermana aquí.'], // siempre lo mismo
     },
   ],

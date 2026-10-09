@@ -16,7 +16,7 @@ export interface Escenario {
   dibujarMapa?: (c: CanvasRenderingContext2D, aM: (x: number, z: number) => readonly [number, number], escala: number) => void;
 }
 /** Cómo es una persona en la maqueta (el muñeco 3D). */
-export interface Figura { ropa: string; pantalon?: string; piel?: string; pelo?: string; falda?: boolean; pelolargo?: boolean; gafas?: boolean; calvo?: boolean; zapatos?: string }
+export interface Figura { ropa: string; /** camisa por delante (con americana) */ camisa?: string; /** pelo con volumen */ rizado?: boolean; pantalon?: string; piel?: string; pelo?: string; falda?: boolean; pelolargo?: boolean; gafas?: boolean; calvo?: boolean; zapatos?: string }
 export interface Personaje {
   id: string; nombre: string; papel: string; x: number; z: number;
   figura: Figura; retrato: Retrato;
@@ -75,11 +75,12 @@ export function figura3D(f: Figura, escala = 3) {
   const brazoI = miembro(0.08, 0.24, 0.08, ropa, -0.21, 0.5), brazoD = miembro(0.08, 0.24, 0.08, ropa, 0.21, 0.5);
   brazoI.add(caja(0.07, 0.06, 0.07, piel, 0, -0.3, 0)); brazoD.add(caja(0.07, 0.06, 0.07, piel, 0, -0.3, 0));
   cuerpo.add(caja(0.34, 0.3, 0.24, ropa, 0, 0.22, 0));                                    // torso
+  if (f.camisa) cuerpo.add(caja(0.1, 0.28, 0.02, mat(f.camisa), 0, 0.23, 0.12));          // camisa entre las solapas
   if (f.falda) cuerpo.add(caja(0.38, 0.2, 0.28, mat(f.pantalon ?? '#3E4A5C'), 0, 0.1, 0));  // falda
   cuerpo.add(caja(0.22, 0.22, 0.22, piel, 0, 0.52, 0));                                   // cabeza
   const pelo = mat(f.pelo ?? '#3A2618');
   if (!f.calvo) {
-    cuerpo.add(caja(0.24, 0.07, 0.24, pelo, 0, 0.72, 0));                                 // pelo por arriba
+    cuerpo.add(caja(f.rizado ? 0.27 : 0.24, f.rizado ? 0.12 : 0.07, f.rizado ? 0.27 : 0.24, pelo, 0, 0.7, 0)); // pelo por arriba
     cuerpo.add(caja(0.24, f.pelolargo ? 0.34 : 0.14, 0.06, pelo, 0, f.pelolargo ? 0.38 : 0.6, -0.1)); // nuca o melena
   } else cuerpo.add(caja(0.24, 0.06, 0.06, pelo, 0, 0.56, -0.1));
   if (f.gafas) cuerpo.add(caja(0.2, 0.04, 0.02, mat('#1E1A16'), 0, 0.57, 0.115));
