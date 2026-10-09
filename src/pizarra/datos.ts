@@ -126,7 +126,7 @@ export const pizarra: DatosJuego = {
       // dibujado a partir de su foto: pelo rizado, gafas de pasta negras, americana azul marino y camisa blanca
       figura: { ropa: '#1F2A44', camisa: '#F4F2EC', pantalon: '#2E3440', pelo: '#2A1F18', rizado: true, gafas: true, piel: '#C99472' },
       retrato: { piel: '#C99472', pelo: '#2A1F18', peinado: 'rizado', escote: 'americana', ropa: '#1F2A44', extra: ['gafasPasta'], gesto: 'dientes', fondo: '#E9C7B8' },
-      lineas: ['No, no, no, no te puedo sacar el certificado digital si no viene tu hermana aquí.'], // siempre lo mismo
+      lineas: ['No, no, no, no puedo sacarte el certificado digital de tu hermana si no viene ella aquí.'], // siempre lo mismo
     },
   ],
   paradas,
