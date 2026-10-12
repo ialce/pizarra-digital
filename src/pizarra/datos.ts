@@ -98,6 +98,7 @@ export function capitulo(id: string, contenido: ContenidoCapitulo): DatosJuego {
   final: { lugar: 'El Santo', x: santo.x, z: santo.z, ...c.final },
   bienvenida: { lugar: `Capítulo ${info.numero}`, texto: `${info.titulo}. Estás en la puerta del Punto Vuela: Victoria te espera para contarte el tema de hoy. Toca el suelo para andar.` },
   primeraPista: c.primeraPista,
-  guiado: false, // sin flecha, sin «Llévame» y sin marcar el sitio: cada uno va por su cuenta con la pista
+  guiado: false, // sin «Llévame», sin camino ni marca del sitio: cada uno va por su cuenta con la pista…
+  rumbo: true,   // …con una flechita que apunta hacia la zona (en línea recta, no por las calles)
   };
 }

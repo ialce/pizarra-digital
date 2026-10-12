@@ -55,6 +55,9 @@ export interface DatosJuego {
   /** Ayudas para llegar (flecha, «Llévame», marca dorada y camino en el mapa). Sin ellas (false), cada uno va
    *  a la siguiente parada por su cuenta, solo con la pista. Por defecto, sí. */
   guiado?: boolean;
+  /** Sin ayudas (guiado: false), una flechita junto al jugador que apunta en línea recta hacia la zona de la
+   *  siguiente pista (no por las calles). Se esconde al llegar cerca, para que el sitio exacto lo busquen ellos. */
+  rumbo?: boolean;
   /** «realista» (por defecto) o «pixel» (pixel-art con contornos, como La Hemeroteca). */
   estilo?: 'realista' | 'pixel';
 }
@@ -650,6 +653,13 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
       proy.set(pos.x, 0.6, pos.z).project(camara); const cx = (proy.x + 1) / 2 * ancho, cy = (1 - proy.y) / 2 * alto;
       const ang = Math.atan2(gy - cy, gx - cx), k = Math.max(80, Math.min(ancho, alto) * 0.17);
       flecha.hidden = false; flecha.style.transform = `translate(${cx + Math.cos(ang) * k}px, ${cy + Math.sin(ang) * k}px) translate(-50%,-50%) rotate(${ang + Math.PI / 2}rad)`;
+    } else if (!GUIADO && datos.rumbo && objetivoActual && fase >= 1 && !ocupado() && Math.hypot(objetivoActual.x - pos.x, objetivoActual.z - pos.z) > 25) {
+      // flechita de rumbo: en línea recta hacia la zona, pequeña y pegada al jugador
+      proy.set(objetivoActual.x, 0.6, objetivoActual.z).project(camara); const gx = (proy.x + 1) / 2 * ancho, gy = (1 - proy.y) / 2 * alto;
+      proy.set(pos.x, 0.6, pos.z).project(camara); const cx = (proy.x + 1) / 2 * ancho, cy = (1 - proy.y) / 2 * alto;
+      const ang = Math.atan2(gy - cy, gx - cx), k = 58;
+      flecha.hidden = false; flecha.classList.add('pj-rumbo');
+      flecha.style.transform = `translate(${cx + Math.cos(ang) * k}px, ${cy + Math.sin(ang) * k}px) translate(-50%,-50%) rotate(${ang + Math.PI / 2}rad)`;
     } else flecha.hidden = true;
     raf = requestAnimationFrame(bucle);
   };
