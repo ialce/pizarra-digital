@@ -52,7 +52,8 @@ function sitio(clave: string) {
 /** Lo que cambia en cada capítulo. Recibe las ayudas para colocar las paradas por nombre de calle o de sitio. */
 export type ContenidoCapitulo = (ayudas: { calle: typeof calle; sitio: typeof sitio }) => {
   victoria: string[]; primeraPista: string; paradas: Parada[];
-  final: { lineas: string[]; titulo: string; texto: string };
+  /** Dónde acaba el capítulo: por defecto El Santo; si no, `lugar` + `x`/`z` (con calle() o sitio()). */
+  final: { lineas: string[]; titulo: string; texto: string; lugar?: string; x?: number; z?: number };
 };
 const bloquearCaja = (m: Mascara, x: number, z: number, r: number) => {
   for (let j = Math.floor((z - r - m.z0) / m.paso); j <= Math.floor((z + r - m.z0) / m.paso); j++)
@@ -95,7 +96,7 @@ export function capitulo(id: string, contenido: ContenidoCapitulo): DatosJuego {
     },
   ],
   paradas: c.paradas,
-  final: { lugar: 'El Santo', x: santo.x, z: santo.z, ...c.final },
+  final: { ...c.final, lugar: c.final.lugar ?? 'El Santo', x: c.final.x ?? santo.x, z: c.final.z ?? santo.z },
   bienvenida: { lugar: `Capítulo ${info.numero}`, texto: `${info.titulo}. Estás en la puerta del Punto Vuela: Victoria te espera para contarte el tema de hoy. Toca el suelo para andar.` },
   primeraPista: c.primeraPista,
   guiado: false, // sin «Llévame», sin camino ni marca del sitio: cada uno va por su cuenta con la pista…
