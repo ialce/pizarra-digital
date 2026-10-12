@@ -8,7 +8,7 @@ export interface InfoCapitulo { id: string; numero: number; titulo: string; resu
 
 export const CAPITULOS: InfoCapitulo[] = [
   { id: 'basicas', numero: 1, titulo: 'Preguntas básicas', resumen: 'Mensajes engañosos, contraseñas seguras, mandar una foto y los atajos del teclado.', abierto: true },
-  { id: 'gmail', numero: 2, titulo: 'Gmail', resumen: 'Tu dirección de correo, escribir y enviar un correo, las carpetas y los correos trampa.', abierto: false },
+  { id: 'gmail', numero: 2, titulo: 'Gmail', resumen: 'Tu dirección de correo, escribir y enviar un correo, las carpetas y los correos trampa.', abierto: true },
   { id: 'imagenes-ia', numero: 3, titulo: 'Crear imágenes con IA', resumen: 'Pedirle a ChatGPT que dibuje: cómo pedirlo bien, los pasos y qué no se debe hacer.', abierto: false },
   { id: 'chrome', numero: 4, titulo: 'El navegador Chrome', resumen: 'Los botones del navegador, la barra de arriba, buscar algo y saber si una página es de fiar.', abierto: false },
 ];
