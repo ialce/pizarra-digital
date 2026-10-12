@@ -137,6 +137,11 @@ for (const v of vias) if (v.t.name && v.puntos.length > 2 && (v.t.amenity || v.t
   const p = cerrada(v.puntos) ? v.puntos.slice(0, -1) : v.puntos;
   lugares[slug(v.t.name)] ??= { x: +(p.reduce((a, q) => a + q[0], 0) / p.length).toFixed(1), z: +(p.reduce((a, q) => a + q[1], 0) / p.length).toFixed(1), nombre: v.t.name };
 }
+// El polideportivo (en OSM, sin nombre): ahí está la piscina municipal
+for (const v of vias) if (v.t.leisure === 'sports_centre' && !v.t.name && cerrada(v.puntos)) {
+  const p = v.puntos.slice(0, -1);
+  lugares['polideportivo'] ??= { x: +(p.reduce((a, q) => a + q[0], 0) / p.length).toFixed(1), z: +(p.reduce((a, q) => a + q[1], 0) / p.length).toFixed(1), nombre: 'Polideportivo' };
+}
 for (const n of nodosConEtiquetas) if (n.t.amenity === 'post_office') lugares['correos'] ??= { x: n.p[0], z: n.p[1], nombre: n.t.name ?? 'Correos' };
 for (const c of calles) if (c.nombre) { const m = c.puntos[Math.floor(c.puntos.length / 2)]; lugares[slug(c.nombre)] ??= { x: m[0], z: m[1], nombre: c.nombre }; }
 

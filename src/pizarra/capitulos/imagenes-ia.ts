@@ -1,12 +1,12 @@
 // Capítulo 3 · Crear imágenes con IA (ChatGPT). Recorrido por el norte: estación, Calle Real, el Palacio y la Concordia.
-// ⚠ Propuesta de Claude: Iván la revisa antes de abrirlo.
+// Definitivo según el documento de Iván del 12 de octubre: termina en la Plaza de la Concordia.
 import type { ContenidoCapitulo } from '../datos';
 
 export const imagenesIA: ContenidoCapitulo = ({ sitio, calle }) => ({
   victoria: [
     '¡Hola de nuevo! Hoy vamos a crear imágenes con inteligencia artificial, con ChatGPT.',
     'Tú le escribes lo que quieres y él lo dibuja. Pero hay que saber pedírselo bien.',
-    'Las pistas de hoy van por la parte de arriba del pueblo y terminan, como siempre, en El Santo.',
+    'Las pistas de hoy van por la parte de arriba del pueblo.',
   ],
   primeraPista: 'La primera pista espera donde para el tren que va a Málaga.',
   paradas: [
@@ -62,12 +62,13 @@ export const imagenesIA: ContenidoCapitulo = ({ sitio, calle }) => ({
         ],
         bien: '¡Exacto! Antes de creerte una imagen, piénsalo dos veces.',
       },
-      pista: '¡Última parada! Ve hasta El Santo.',
+      pista: '',
     },
   ],
   final: {
-    lineas: ['¡Has llegado a El Santo!', 'Ya sabes pedirle imágenes a la IA, y también desconfiar de las que parecen demasiado increíbles.'],
+    lugar: 'la Plaza de la Concordia', ...sitio('plaza-de-la-concordia'),
+    lineas: ['¡Enhorabuena, acabas de completar la misión!', '¡A por la siguiente!'],
     titulo: '¡Capítulo 3 superado!',
-    texto: 'Has recorrido el norte de Pizarra aprendiendo a crear imágenes con inteligencia artificial y has llegado hasta El Santo. Enhorabuena de parte de todo el Punto Vuela.',
+    texto: 'Has recorrido el norte de Pizarra aprendiendo a crear imágenes con inteligencia artificial. Enhorabuena de parte de todo el Punto Vuela.',
   },
 });

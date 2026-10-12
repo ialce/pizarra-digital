@@ -1,8 +1,8 @@
 // Capítulo 1 · Preguntas básicas. Recorrido por el barrio nuevo (Plaza de España, Avenida de Europa…).
-// ⚠ De ejemplo hasta que Iván pase las preguntas de verdad.
+// Definitivo según el documento de Iván del 12 de octubre (las cuatro primeras, como estaban; la quinta, en El Santo).
 import type { ContenidoCapitulo } from '../datos';
 
-export const basicas: ContenidoCapitulo = ({ calle }) => ({
+export const basicas: ContenidoCapitulo = ({ calle, santo }) => ({
   victoria: [
     '¡Hola! Soy Victoria, la profesora del Punto Vuela. Hoy empezamos con preguntas básicas.',
     'Vas a recorrer el pueblo buscando pistas. En cada sitio hay un pequeño reto de móviles, ordenadores e internet.',
@@ -60,11 +60,24 @@ export const basicas: ContenidoCapitulo = ({ calle }) => ({
         parejas: [['Ctrl + C', 'Copiar'], ['Ctrl + V', 'Pegar'], ['Ctrl + Z', 'Deshacer']],
         bien: '¡Perfecto! Con estos tres atajos ya te manejas mejor que muchos.',
       },
-      pista: '¡Ya solo queda la última parada! Ve a El Santo, el sitio que más quieren los pizarreños.',
+      pista: 'Ve a El Santo, es la hora de mover el esqueleto y subir cuestas.',
+    },
+    {
+      id: 'el-santo', lugar: 'El Santo', ...santo, objeto: 'movil',
+      lineas: ['¡Has subido hasta El Santo! Aquí arriba hay un móvil con una última pregunta.'],
+      reto: {
+        tipo: 'una', titulo: 'El certificado digital', enunciado: '¿Puedo instalar mi certificado digital en mi móvil?',
+        opciones: [
+          { texto: 'Sí', bien: true },
+          { texto: 'No', porque: 'Sí se puede: el certificado digital también se instala en el móvil.' },
+        ],
+        bien: '¡Eso es! El certificado digital también se puede llevar en el móvil.',
+      },
+      pista: '',
     },
   ],
   final: {
-    lineas: ['¡Has llegado a El Santo, el rincón más querido de Pizarra!', 'Has superado las preguntas básicas. ¡Ya te manejas con el móvil y el ordenador!'],
+    lineas: ['¡Enhorabuena, acabas de completar la misión!', '¡A por la siguiente!'],
     titulo: '¡Capítulo 1 superado!',
     texto: 'Has resuelto las preguntas básicas por el barrio nuevo y has llegado hasta El Santo. Enhorabuena de parte de todo el Punto Vuela.',
   },

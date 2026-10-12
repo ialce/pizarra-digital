@@ -1,12 +1,12 @@
 // Capítulo 2 · Gmail. Recorrido por el centro: Correos, Casa de la Cultura, Ayuntamiento y la iglesia.
-// ⚠ Propuesta de Claude: Iván la revisa antes de abrirlo.
+// Definitivo según el documento de Iván del 12 de octubre: termina en la piscina municipal (en el polideportivo).
 import type { ContenidoCapitulo } from '../datos';
 
 export const gmail: ContenidoCapitulo = ({ sitio }) => ({
   victoria: [
     '¡Bienvenido otra vez! Hoy toca Gmail, el correo electrónico de Google.',
     'Las pistas de hoy están por el centro del pueblo. En cada una aprenderás algo del correo.',
-    'Como siempre, la última te lleva hasta El Santo. ¡A por ello!',
+    'Hoy terminamos en un sitio fresquito. ¡A por ello!',
   ],
   primeraPista: 'Para hablar de correo, empieza por donde se han mandado las cartas toda la vida.',
   paradas: [
@@ -56,12 +56,26 @@ export const gmail: ContenidoCapitulo = ({ sitio }) => ({
         ],
         bien: '¡Perfecto! Si te piden la contraseña por correo, es una trampa.',
       },
-      pista: '¡Última parada! Sube hasta El Santo.',
+      pista: 'Hora de dar un chapuzón. Busca la piscina municipal.',
+    },
+    {
+      id: 'piscina', lugar: 'la Piscina Municipal', ...sitio('polideportivo'), objeto: 'tableta',
+      lineas: ['En la piscina municipal hay una tableta con el calendario de Google abierto.'],
+      reto: {
+        tipo: 'una', titulo: 'El calendario de Google', enunciado: '¿Puedo anotar un evento próximo en mi calendario de Google?',
+        opciones: [
+          { texto: 'Sí', bien: true },
+          { texto: 'No', porque: 'Sí se puede: con tu cuenta de Gmail tienes también el calendario de Google.' },
+        ],
+        bien: '¡Eso es! Con tu cuenta de Gmail también tienes calendario para apuntar citas y eventos.',
+      },
+      pista: '',
     },
   ],
   final: {
-    lineas: ['¡Has llegado a El Santo!', 'Ya sabes tu dirección, escribir un correo, las carpetas y cómo no caer en trampas. ¡Gmail ya no tiene secretos!'],
+    lugar: 'la Piscina Municipal', ...sitio('polideportivo'),
+    lineas: ['¡Enhorabuena, acabas de completar la misión!', '¡A por la siguiente!'],
     titulo: '¡Capítulo 2 superado!',
-    texto: 'Has recorrido el centro de Pizarra aprendiendo a usar Gmail y has llegado hasta El Santo. Enhorabuena de parte de todo el Punto Vuela.',
+    texto: 'Has recorrido el centro de Pizarra aprendiendo a usar Gmail y su calendario. Enhorabuena de parte de todo el Punto Vuela.',
   },
 });

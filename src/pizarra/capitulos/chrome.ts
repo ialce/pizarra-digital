@@ -1,11 +1,11 @@
 // Capítulo 4 · El navegador Chrome. Recorrido por la zona de la estación y la Avenida de la Constitución.
-// ⚠ Propuesta de Claude: Iván la revisa antes de abrirlo.
+// Definitivo según el documento de Iván del 12 de octubre: termina en la Ronda del Olivar.
 import type { ContenidoCapitulo } from '../datos';
 
 export const chrome: ContenidoCapitulo = ({ sitio, calle }) => ({
   victoria: [
     '¡Bienvenido! Hoy aprendemos a usar Chrome, el programa para entrar en internet.',
-    'Las pistas de hoy están cerca de aquí, por la zona de la estación. La última, como siempre, en El Santo.',
+    'Las pistas de hoy están cerca de aquí, por la zona de la estación.',
   ],
   primeraPista: 'Empieza en la plaza que hay junto a la estación del tren.',
   paradas: [
@@ -57,12 +57,13 @@ export const chrome: ContenidoCapitulo = ({ sitio, calle }) => ({
         pasos: ['Abrir Chrome', 'Tocar la barra de arriba', 'Escribir «horario autobús Pizarra Málaga»', 'Pulsar buscar', 'Abrir uno de los resultados'],
         bien: '¡Encontrado!',
       },
-      pista: '¡Última parada! Ve hasta El Santo.',
+      pista: '',
     },
   ],
   final: {
-    lineas: ['¡Has llegado a El Santo!', 'Ya sabes moverte por Chrome, buscar lo que necesitas y reconocer una página de fiar.'],
+    lugar: 'la Ronda del Olivar', ...calle('Ronda del Olivar', 0.5),
+    lineas: ['¡Enhorabuena, acabas de completar la misión!', '¡Hasta la próxima!'],
     titulo: '¡Capítulo 4 superado!',
-    texto: 'Has recorrido Pizarra aprendiendo a usar el navegador Chrome y has llegado hasta El Santo. Enhorabuena de parte de todo el Punto Vuela.',
+    texto: 'Has recorrido Pizarra aprendiendo a usar el navegador Chrome. Enhorabuena de parte de todo el Punto Vuela.',
   },
 });

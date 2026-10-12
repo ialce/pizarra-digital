@@ -437,6 +437,8 @@ export async function iniciarJuego(raiz: HTMLElement, datos: DatosJuego, opcione
       sonido.exclusiva();
       fase++; guardar(); actualizarObjetivo();
       const obj = objetos[fase - 2]; if (obj) obj.visible = false;
+      // la última parada está en el mismo sitio que el final: se acaba ahí mismo, sin otra pista
+      if (fase === N + 1 && Math.hypot(datos.final.x - pd.x, datos.final.z - pd.z) < 8) { llegarAlFinal(); return; }
       decir(fase <= N ? `Pista ${fase - 1} de ${N} resuelta` : '¡Última pista resuelta!', 'Siguiente destino', pd.pista, cerrarDialogo, 'Vamos');
     };
     encadenar(nombre, papel, pd.lineas, () => {

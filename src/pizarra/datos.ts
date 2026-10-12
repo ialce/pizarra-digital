@@ -50,7 +50,7 @@ function sitio(clave: string) {
 }
 
 /** Lo que cambia en cada capítulo. Recibe las ayudas para colocar las paradas por nombre de calle o de sitio. */
-export type ContenidoCapitulo = (ayudas: { calle: typeof calle; sitio: typeof sitio }) => {
+export type ContenidoCapitulo = (ayudas: { calle: typeof calle; sitio: typeof sitio; santo: { x: number; z: number } }) => {
   victoria: string[]; primeraPista: string; paradas: Parada[];
   /** Dónde acaba el capítulo: por defecto El Santo; si no, `lugar` + `x`/`z` (con calle() o sitio()). */
   final: { lineas: string[]; titulo: string; texto: string; lugar?: string; x?: number; z?: number };
@@ -63,7 +63,7 @@ const bloquearCaja = (m: Mascara, x: number, z: number, r: number) => {
 /** Monta el capítulo `id` con el contenido de su fichero. */
 export function capitulo(id: string, contenido: ContenidoCapitulo): DatosJuego {
   const info = CAPITULOS.find(c => c.id === id)!;
-  const c = contenido({ calle, sitio });
+  const c = contenido({ calle, sitio, santo: { x: santo.x, z: santo.z } });
   return {
   id,
   titulo: `Capítulo ${info.numero} · ${info.titulo}`,
@@ -72,6 +72,9 @@ export function capitulo(id: string, contenido: ContenidoCapitulo): DatosJuego {
     // Cartel del Punto Vuela, en la acera, mirando a la calle
     const c = junto(0, 3.6); cartel(e, c.x, c.z, Math.atan2(-nx, -nz), 'PUNTO VUELA');
     monumento(e, santo.x, santo.z - 5);
+    // Cartel de la piscina municipal, en el polideportivo (final del capítulo de Gmail)
+    { const pi = sitio('polideportivo'), l = P.lugares['polideportivo'], d = Math.hypot(l.x - pi.x, l.z - pi.z) || 1;
+      cartel(e, pi.x + (l.x - pi.x) / d * 4, pi.z + (l.z - pi.z) / d * 4, Math.atan2(pi.x - l.x, pi.z - l.z), 'PISCINA MUNICIPAL', { fondo: '#2B6CA8' }); }
     bloquearCaja(r.mascara, santo.x, santo.z - 5, 1.5);
     return r;
   },
