@@ -148,3 +148,5 @@ button{font-family:inherit}
 .capitulo[data-estado="cerrado"] .capitulo-num{border-color:var(--gris);color:var(--gris)}
 .capitulo[data-estado="cerrado"] h2{color:var(--gris)}
 @media (max-width:600px){.capitulo{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:12px}.capitulo-num{width:44px;height:44px;font-size:1.3rem}}
+
+.boton-vr{background:#2B2E44;color:#fff}

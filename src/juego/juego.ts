@@ -61,7 +61,7 @@ export interface DatosJuego {
   /** «realista» (por defecto) o «pixel» (pixel-art con contornos, como La Hemeroteca). */
   estilo?: 'realista' | 'pixel';
 }
-interface Partida { fase: number; fallos: number; x: number; z: number; hablados: string[] }
+export interface Partida { fase: number; fallos: number; x: number; z: number; hablados: string[] }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
@@ -94,7 +94,7 @@ export function figura3D(f: Figura, escala = 3) {
 }
 
 /** Objeto de la pista: un ordenador, un móvil, una tableta o un sobre que flota y brilla. */
-function objetoPista(tipo: Parada['objeto'] = 'ordenador') {
+export function objetoPista(tipo: Parada['objeto'] = 'ordenador') {
   const g = new THREE.Group(), brillo = { emissive: '#3A6EA8', emissiveIntensity: 0.6 };
   if (tipo === 'ordenador') {
     g.add(caja(0.9, 0.06, 0.6, mat('#3A3F48'), 0, 0, 0));

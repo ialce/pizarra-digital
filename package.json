@@ -7,7 +7,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "osm": "node scripts/osm.mjs",
-    "revisar": "node scripts/revisar.mjs"
+    "revisar": "node scripts/revisar.mjs",
+    "revisar-vr": "node scripts/revisar-vr.mjs"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   "homepage": "https://github.com/ialce/pizarra-digital#readme",
   "devDependencies": {
     "@types/three": "^0.186.0",
+    "iwer": "^2.7.0",
     "playwright-core": "^1.64.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4"
